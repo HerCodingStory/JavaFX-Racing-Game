@@ -18,6 +18,7 @@
  * and/or persons.
  *----------------------------------------*/
 
+// Imports
 import java.util.LinkedList;
 import java.util.Queue;
 import javafx.animation.FadeTransition;
@@ -76,28 +77,30 @@ import javafx.stage.Stage;
 import javafx.util.Callback;
 import javafx.util.Duration;
 
-public class SpaceRace extends Application {
+public class SpaceRace extends Application
+{
 	// Declaring and initilise some variables here some we can change them in
 	// the methods.
 	// Variables for the Timer
-	static final Integer STARTTIME = 3;
-	static Label timerLabel = new Label();
-	static IntegerProperty timeSeconds = new SimpleIntegerProperty(STARTTIME);
-	static Timeline timeline;
+	private static final Integer STARTTIME     = 3;
+	private static Label timerLabel            = new Label();
+	private static IntegerProperty timeSeconds = new SimpleIntegerProperty(STARTTIME);
+	private static Timeline timeline;
 
 	// Threads
-	Thread threadRace;
-	Thread threadResult;
+	private Thread threadRace;
+	private Thread threadResult;
 	
 	// Rest of Variables
-	boolean racing = false;
-	Queue<String> finishedOrder = new LinkedList<String>();
-	double bet;
-	String userChoice;
+	private boolean racing              = false; // boolean to check if race is happening or it ended
+	private Queue<String> finishedOrder = new LinkedList<String>(); // String to Print finished order
+	private double bet; // betting amount
+	private String userChoice; // Spaceship choice
 
 	@Override
-	public void start(Stage primaryStage) {
-		Pane pane = new Pane();
+	public void start(Stage primaryStage) 
+	{
+		Pane pane      = new Pane();
 		Group paneRace = new Group();
 
 		// This is just calling the methods to draw everything
@@ -113,18 +116,19 @@ public class SpaceRace extends Application {
 		Stop[] paintGradientMenu = new Stop[] { new Stop(0, Color.GRAY),
 				new Stop(1, Color.SILVER) };
 
-		// Fills with a linear color gradient pattern
+		// Menu: Fills with a linear color gradient pattern
 		LinearGradient gray = new LinearGradient(0, 0, 0, 1, true,
 				CycleMethod.NO_CYCLE, paintGradientMenu);
 
-		// Create our Menu back with rounded corners
-                Screen screen = Screen.getPrimary();
-                
+		// Gets screen boundaries of any screen
+                Screen screen      = Screen.getPrimary();
                 Rectangle2D bounds = screen.getVisualBounds();
-                Rectangle menu = new Rectangle(0, 646, 800, 200);
+		//Creates Menu rectangle and set bounds depending on the screen
+                Rectangle menu     = new Rectangle(0, 646, 800, 200);
                 menu.setY(bounds.getMaxY() - 200);
                 menu.setWidth(bounds.getWidth());
 		
+		// Menu has round borders
 		menu.setArcWidth(10);
 		menu.setArcHeight(10);
 		menu.setFill(gray); // Fill with Gradient
@@ -134,24 +138,30 @@ public class SpaceRace extends Application {
 				"RED", "PINK", "GREEN", "PURPLE", "BLUE");
 		// Create our ComboBox and add the options
 		ComboBox<String> comboBox = new ComboBox<String>(options);
-		comboBox.setPromptText("Select Spaceship"); // Give instructions to						
-		comboBox.setLayoutX((bounds.getMaxX() - 150));                   // the user
-		comboBox.setLayoutY(655);
+		comboBox.setPromptText("Select Spaceship"); // Give instructions to the user	
+		// Position of combo box depends on screen size
+		comboBox.setLayoutX((bounds.getMaxX() - 150)); 
+		comboBox.setLayoutY((bounds.getMaxY() - 150));
 		// Create a Cell Factory to customize our ComboBox
-		comboBox.setCellFactory(new Callback<ListView<String>, ListCell<String>>() {
-			public ListCell<String> call(ListView<String> p) {
-				final ListCell<String> cell = new ListCell<String>() {
-					{
+		comboBox.setCellFactory(new Callback<ListView<String>, ListCell<String>>() 
+		{
+			public ListCell<String> call(ListView<String> p) 
+			{
+				final ListCell<String> cell = new ListCell<String>() 
+				{
+					//{//
 						// Change text Font and size
 						super.setPrefWidth(20);
 						super.setFont(Font.font("Impact", FontWeight.BOLD, 14));
-					}
+					//}//
 
 					@Override
-					public void updateItem(String item, boolean empty) {
+					public void updateItem(String item, boolean empty) 
+					{
 						// Customize options
 						super.updateItem(item, empty);
-						if (item != null) {
+						if (item != null)
+						{
 							setText(item);
 							// If ComboBox contains word, add Color
 							if (item.contains("RED"))
@@ -164,42 +174,44 @@ public class SpaceRace extends Application {
 								setTextFill(Color.PURPLE);
 							else
 								setTextFill(Color.DEEPSKYBLUE);
-						} else
+						}
+						else
 							setText(null);
 					}
 				};
 				return cell;
 			}
 		});
+		
 		// Get userChoice from the ComboBox
 		// You need to create a Changelistener of Objects to get value whenever
 		// is change.
-		comboBox.getSelectionModel().selectedIndexProperty()
-				.addListener(new ChangeListener<Object>() {
-					public void changed(
-							@SuppressWarnings("rawtypes") ObservableValue observable,
-							Object oldValue, Object newValue) {
-								userChoice = newValue.toString();
-							}
+		comboBox.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Object>()
+		{
+			public void changed(@SuppressWarnings("rawtypes") ObservableValue observable,
+				Object oldValue, Object newValue) 
+				{
+					userChoice = newValue.toString();
+				}
 		});
 
 		// Create label showing a Instruction to the user
 		Label instructionLabel = new Label("Enter a Betting Amount: ");
-		instructionLabel.setLayoutX(bounds.getMaxX() / 2);
-		instructionLabel.setLayoutY(655);
+		instructionLabel.setLayoutX(bounds.getMaxX() / 2); // depending on screen size acommodate
+		instructionLabel.setLayoutY(bounds.getMaxY() - 150);
 		// Change font and size
 		instructionLabel.setFont(Font.font("Impact", FontWeight.BOLD, 20));
 
 		// This label change depending on the situation
 		Label changingLabel = new Label("");
 		changingLabel.setLayoutX(bounds.getMaxX() / 2);
-		changingLabel.setLayoutY(730);
+		changingLabel.setLayoutY(bounds.getMaxY() - 50);
 		changingLabel.setFont(Font.font("Impact", FontWeight.BOLD, 18));
 
 		// Create a text field where user can enter the amount to bet
 		TextField textField = new TextField();
 		textField.setLayoutX(bounds.getMaxX() / 2);
-		textField.setLayoutY(685);
+		textField.setLayoutY(bounds.getMaxY() - 100);
 		textField.setFont(Font.font("Impact", FontWeight.BOLD, 20));
 		textField.setPromptText("$"); // Display the Dollar Sign($) PromptText
 
@@ -207,177 +219,167 @@ public class SpaceRace extends Application {
 		// Bind the timerLabel text property to the timeSeconds property
 		timerLabel.textProperty().bind(timeSeconds.asString());
 		timerLabel.setTextFill(Color.ORANGERED);
-		timerLabel.setLayoutX(230);
+		timerLabel.setLayoutX(230); // NEED TO CHANGE DEPENDING ON SIZE OF SCREEN *********
 		timerLabel.setLayoutY(630);
 		timerLabel.setFont(Font.font("Impact", FontWeight.BOLD, 150));
 
-		// Create our StartButton
+		// Creates our StartButton
 		Button startButton = new Button("Start Race");
-		// Create our Reset Button
+		// Creates our Reset Button
 		Button resetButton = new Button("Reset Race");
 		
 		// StartButton Properties
 		startButton.setFont(Font.font("Impact", FontWeight.BOLD, 31.5));
-		startButton.setLayoutX(21);
+		startButton.setLayoutX(21); // NEED TO CHANGE TO DEPEND ON SCREEN SIZE **************
 		startButton.setLayoutY(660);
-		// Create a EventHanler so when user Click the Button followings actions
+		// Create a EventHanler so when user Click the Button followings actions are
 		// going to happen
-		startButton.addEventHandler(MouseEvent.MOUSE_CLICKED,
-				new EventHandler<MouseEvent>() {
-					@Override
-					public void handle(MouseEvent event) {
-						String text = textField.getText(); // Get Text from
-														   // TextField
-						try {
-							// If reset button hasn't been pressed, you can't
-							// start a new race
-							// Try to convert String to Double
-							bet = Double.parseDouble(text);
+		startButton.addEventHandler(MouseEvent.MOUSE_CLICKED,new EventHandler<MouseEvent>() 
+		{
+			@Override
+			public void handle(MouseEvent event) 
+			{
+				String text = textField.getText(); // Get Text from Text Field
+				try 
+				{
+					// If reset button hasn't been pressed, you can't
+					// start a new race
+					// Try to convert String to Double
+					bet = Double.parseDouble(text);
 
-							if (bet > 1000) // If value is not valid,
-											// changingLabel prints...
-								changingLabel
-										.setText("C'mon! You don't have that much \nmoney. Try again!!");
-							else if (bet < 1)
-								changingLabel
-										.setText("Wrong!! Try we positive values!!");
-							else if (userChoice == null) // If not userChoice,
-													     // changingLabel
-													     // prints...
-								changingLabel
-										.setText("Choose one Spaceship First!!");
-							else {
-								// Ok, race is good to go
-								// Can't press buttons until race is over
-								startButton.setDisable(true);
-								resetButton.setDisable(true);
-								
-								racing = true;
+					if (bet > 1000) // If value is not valid,
+					// changingLabel prints...
+						changingLabel.setText("C'mon! You don't have that much \nmoney. Try again!!");
+					else if (bet < 1)
+						changingLabel.setText("Wrong!! Try we positive values!!");
+					else if (userChoice == null) // If not userChoice, changingLabel prints...
+						changingLabel.setText("Choose one Spaceship First!!");
+					else
+					{
+						// Ok, race is good to go
+						// Can't press buttons until race is over
+						startButton.setDisable(true);
+						resetButton.setDisable(true);
 
-								timeSeconds.set(STARTTIME); // Countdown start
-								timeline = new Timeline();
-								timeline.getKeyFrames().add(
-										new KeyFrame(Duration
-										.millis(STARTTIME + 4000), // Timer Duration				
-										new KeyValue(timeSeconds, 0))); // Countdown
-																		// finish at 0
-								timeline.playFromStart(); // Play from beginning
+						racing = true; //race is happening
 
-								// Check userChoice and print his/her option.
-								switch (userChoice) {
-									case "0":
-										changingLabel
-												.setText("Thanks for Betting!! \n You bet $"
-														+ bet + " on the RED Spaceship.");
-										break;
-									case "1":
-										changingLabel
-												.setText("Thanks for Betting!! \n You bet $"
-														+ bet + " on the PINK Spaceship.");
-										break;
-									case "2":
-										changingLabel
-												.setText("Thanks for Betting!! \n You bet $"
-														+ bet + " on the GREEN Spaceship.");
-										break;
-									case "3":
-										changingLabel
-												.setText("Thanks for Betting!! \n You bet $"
-														+ bet + " on the PURPLE Spaceship.");
-										break;
-									case "4":
-										changingLabel
-												.setText("Thanks for Betting!! \n You bet $"
-														+ bet + " on the BLUE Spaceship.");
-										break;
-									}
-								// Remove old pane
-								pane.getChildren().remove(paneRace);
-									
-								// Create a task to run the Thread that make
-								// the rockets
-								Runnable race = new MakeRockets(paneRace, finishedOrder);
-								threadRace = new Thread(race);
-								threadRace.start(); // Start Thread
-	
-								// Add a new pane
-								pane.getChildren().add(paneRace);
-	
-								// Create a task to run the Thread that post
-								// the results of the race
-								Runnable results = new PostResults(pane, finishedOrder, 
-										changingLabel, userChoice, bet, resetButton);
-								threadResult = new Thread(results);
-								threadResult.start(); // Start Thread
-							}
-						} catch (NumberFormatException e) {
-							// If there is no bet, changingLabel prints...
-							changingLabel
-									.setText("C'mon! You need to bet something");
+						timeSeconds.set(STARTTIME); // Countdown start
+						timeline = new Timeline();
+						timeline.getKeyFrames().add(
+							new KeyFrame(Duration.millis(STARTTIME + 4000), // Timer Duration				
+							new KeyValue(timeSeconds, 0))); // Countdown finish at 0
+						timeline.playFromStart(); // Play from beginning
+
+						// Check userChoice and print his/her option.
+						switch (userChoice) 
+						{
+							case "0":
+								changingLabel.setText("Thanks for Betting!! \n You bet $"
+											+ bet + " on the RED Spaceship.");
+								break;
+							case "1":
+								changingLabel.setText("Thanks for Betting!! \n You bet $"
+											+ bet + " on the PINK Spaceship.");
+								break;
+							case "2":
+								changingLabel.setText("Thanks for Betting!! \n You bet $"
+											+ bet + " on the GREEN Spaceship.");
+								break;
+							case "3":
+								changingLabel.setText("Thanks for Betting!! \n You bet $"
+											+ bet + " on the PURPLE Spaceship.");
+								break;
+							case "4":
+								changingLabel.setText("Thanks for Betting!! \n You bet $"
+											+ bet + " on the BLUE Spaceship.");
+								break;
 						}
+						// Remove old pane
+						pane.getChildren().remove(paneRace);
+
+						// Create a task to run the Thread that make the rockets
+						Runnable race = new MakeRockets(paneRace, finishedOrder);
+						threadRace = new Thread(race);
+						threadRace.start(); // Start Thread
+
+						// Add a new pane
+						pane.getChildren().add(paneRace);
+
+						// Create a task to run the Thread that post the results of the race
+						Runnable results = new PostResults(pane, finishedOrder, changingLabel, userChoice, bet, resetButton);
+						threadResult = new Thread(results);
+						threadResult.start(); // Start Thread
 					}
+				} catch (NumberFormatException e)
+				{
+					// If there is no bet, changingLabel prints...
+					changingLabel.setText("C'mon! You need to bet something");
+				}
+			}
 		});
 
 		// ResetButton Properties
 		resetButton.setFont(Font.font("Impact", FontWeight.BOLD, 30));
-		resetButton.setLayoutX(19);
+		resetButton.setLayoutX(19); // NEED TO CHANGE TO SCREEN SIZE ******************
 		resetButton.setLayoutY(730);
 		// Create a EventHanler so when user Click the Button followings actions
 		// going to happen
-		resetButton.addEventHandler(MouseEvent.MOUSE_CLICKED,
-				new EventHandler<MouseEvent>() {
-					@Override
-					public void handle(MouseEvent event) {
-						if (racing == false) // If not racing, do nothing
-							return;
+		resetButton.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() 
+		{
+			@Override
+			public void handle(MouseEvent event) 
+			{
+				if (racing == false) // If not racing, do nothing
+					return;
 
-						// Turn off reset until next race starts
-						racing = false;
+				// Turn off reset until next race starts
+				racing = false;
 
-						// Reset TextField
-						textField.setText(null);
+				// Reset TextField
+				textField.setText(null);
 
-						// If user hasn't click Reset race doesn't start
-						startButton.setDisable(false);// allow new race to start
+				// If user hasn't click Reset race doesn't start
+				startButton.setDisable(false);// allow new race to start
 
-						// Reset Timer when Click reset
-						if (timeline != null)
-							timeline.stop();
-						timeSeconds.set(STARTTIME);
-						timeline = new Timeline();
-						timeline.getKeyFrames().add(
-								new KeyFrame(Duration.millis(STARTTIME + 4000),
-								new KeyValue(timeSeconds, 0)));
+				// Reset Timer when Click reset
+				if (timeline != null)
+					timeline.stop();
+					
+				timeSeconds.set(STARTTIME);
+				timeline = new Timeline();
+				timeline.getKeyFrames().add(
+					new KeyFrame(Duration.millis(STARTTIME + 4000),
+					new KeyValue(timeSeconds, 0)));
 
-						// Reset Label and queue
-						changingLabel.setText("Ok...Make new bet");
-						finishedOrder = new LinkedList<String>();
-						;
+				// Reset Label and queue
+				changingLabel.setText("Ok...Make new bet");
+				finishedOrder = new LinkedList<String>();
+				//;//
 
-						// Stop the threads from finishing, in case you
-						// interrupted a race
-						threadRace.interrupt();
-						threadResult.interrupt();
+				// Stop the threads from finishing, in case you
+				// interrupted a race
+				threadRace.interrupt();
+				threadResult.interrupt();
 
-						// Clear and Remove old Pane
-						paneRace.getChildren().clear();
-						pane.getChildren().remove(paneRace);
+				// Clear and Remove old Pane
+				paneRace.getChildren().clear();
+				pane.getChildren().remove(paneRace);
 
-						// Reset Rockets
-						drawRocket(paneRace, -5, -50, 0.6, 360,
-								Color.ORANGERED, finishedOrder, "1", false);
-						drawRocket(paneRace, -5, 55, 0.6, 360, Color.DEEPPINK,
-								finishedOrder, "2", false);
-						drawRocket(paneRace, -5, 160, 0.6, 360,
-								Color.GREENYELLOW, finishedOrder, "3", false);
-						drawRocket(paneRace, -5, 265, 0.6, 360,
-								Color.MEDIUMPURPLE, finishedOrder, "4", false);
-						drawRocket(paneRace, -5, 375, 0.6, 360,
-								Color.DEEPSKYBLUE, finishedOrder, "5", false);
+				// Reset Rockets
+				drawRocket(paneRace, -5, -50, 0.6, 360,
+						Color.ORANGERED, finishedOrder, "1", false);
+				drawRocket(paneRace, -5, 55, 0.6, 360, Color.DEEPPINK,
+						finishedOrder, "2", false);
+				drawRocket(paneRace, -5, 160, 0.6, 360,
+						Color.GREENYELLOW, finishedOrder, "3", false);
+				drawRocket(paneRace, -5, 265, 0.6, 360,
+						Color.MEDIUMPURPLE, finishedOrder, "4", false);
+				drawRocket(paneRace, -5, 375, 0.6, 360,
+						Color.DEEPSKYBLUE, finishedOrder, "5", false);
 
-						// Add a new Pane
-						pane.getChildren().addAll(paneRace);
-					}
+				// Add a new Pane
+				pane.getChildren().addAll(paneRace);
+			}
 		});
 
 		// Add everything to the pane
@@ -387,7 +389,7 @@ public class SpaceRace extends Application {
 		// And then create the scene
 		Scene scene = new Scene(pane, 800, 600);
 		primaryStage.setTitle("Spaceship Race");
-                primaryStage.setFullScreen(true);
+                primaryStage.setFullScreen(true); // full screen true to any screen
 		primaryStage.setScene(scene);
 		primaryStage.show();
 	}
@@ -397,17 +399,19 @@ public class SpaceRace extends Application {
 	}
 
 	// Add the Space Background Method
-	public static void loadBackground(Pane pane) {
+	public static void loadBackground(Pane pane) 
+	{
 		// Load the image from a specific file
 		Image galaxy = new Image("https://newevolutiondesigns.com/images/freebies/galaxy-wallpaper-36.jpg",
 				800.0, 800.0, false, true, false);
                 
 		// Painting the image
-		ImageView galaxyBackground = new ImageView();
-                Screen screen = Screen.getPrimary();
+		ImageView galaxyBackground = new ImageView(galaxy);
+		
+		// Get screen boundaries
+                Screen screen      = Screen.getPrimary();
                 Rectangle2D bounds = screen.getVisualBounds();
-                
-		galaxyBackground.setImage(galaxy);
+                // Give screen size to image size
                 galaxyBackground.setX(bounds.getMinX());
                 galaxyBackground.setY(bounds.getMinY());
                 galaxyBackground.setFitWidth(bounds.getWidth());
@@ -418,15 +422,14 @@ public class SpaceRace extends Application {
 	}
 
 	// Draw a moon method, with an inserted image
-	public static void drawMoon(Pane pane, double centerX, double centerY,
-			double scale) {
+	public static void drawMoon(Pane pane, double centerX, double centerY,double scale) //NEED TO CHANGE TO SCREEN SIZE 
+	{
 		// Create our moon with a circle
 		Circle moon = new Circle(centerX, centerY, scale);
 
 		// Load the image from a specific URL
-		Image moonSurfaceImage = new Image(
-				"http://www.iac.es/modacosmica/wp-content/uploads/2015/04/moon.jpg", 275.0 * scale,
-				275.0 * scale, false, true, false);
+		Image moonSurfaceImage = new Image("http://www.iac.es/modacosmica/wp-content/uploads/2015/04/moon.jpg",
+							275.0 * scale,275.0 * scale, false, true, false);
 
 		// Create a image pattern
 		ImagePattern imagePatternMoon = new ImagePattern(moonSurfaceImage);
@@ -441,8 +444,8 @@ public class SpaceRace extends Application {
 	}
 
 	// Draw a sun method with an image
-	public static void drawSun(Pane pane, double centerX, double centerY,
-			double scale) {
+	public static void drawSun(Pane pane, double centerX, double centerY,double scale) //NEED TO CHANGE TO SCREEN SIZE 
+	{
 		// Create our sun with a circle
 		Circle sun = new Circle(centerX, centerY, scale);
 
@@ -455,49 +458,51 @@ public class SpaceRace extends Application {
 
 		// Fill the Sun with a Sun Template
 		sun.setFill(imagePatternSun); // It's Hot
-                //sun.setFill(Color.YELLOW);
+                
+		//sun.setFill(Color.YELLOW);
 
 		// Add it to the pane
 		pane.getChildren().add(sun);
 	}
 
 	// Draw Saturn and rings method
-	public static void drawSaturn(Pane pane, double centerX, double centerY,
-			double scale, double angle) {
+	public static void drawSaturn(Pane pane, double centerX, double centerY,double scale, double angle) //NEED TO CHANGE TO SCREEN SIZE 
+	{
 		/*
 		 * Radial Gradient to fill the planet, center is to be roughly 1 "radius
 		 * length" above the planet or just 2 over the center. Radius is about 4
 		 * times planet radius so that it covers properly
 		 */
-		RadialGradient planetPaint = new RadialGradient(0, 0, centerX, centerY
-				- 18 * scale, 35 * scale, false, CycleMethod.NO_CYCLE,
-				new Stop[] {
-						// We used Color.rgb method for better control over the
-						// colors and tones
-						new Stop(0.23, Color.rgb(252, 99, 0)),
-						new Stop(0.25, Color.DARKGOLDENROD),
-						new Stop(0.27, Color.rgb(220, 170, 40)),
-						new Stop(0.29, Color.rgb(255, 179, 50)),
-						new Stop(0.3, Color.rgb(180, 72, 31)),
-						new Stop(0.35, Color.rgb(136, 87, 29)),
-						new Stop(0.36, Color.rgb(227, 170, 100)),
-						new Stop(0.37, Color.rgb(255, 179, 83)),
-						new Stop(0.4, Color.rgb(200, 140, 135)),
-						new Stop(0.455, Color.rgb(255, 179, 83)),
-						new Stop(0.47, Color.rgb(227, 170, 100)),
-						new Stop(0.48, Color.rgb(255, 179, 83)),
-						new Stop(0.5, Color.rgb(249, 98, 0)),
-						new Stop(0.53, Color.rgb(255, 179, 83)),
-						new Stop(0.55, Color.rgb(227, 170, 100)),
-						new Stop(0.6, Color.rgb(255, 179, 83)),
-						new Stop(0.62, Color.rgb(227, 170, 100)),
-						new Stop(0.64, Color.rgb(255, 179, 83)),
-						new Stop(0.65, Color.rgb(227, 170, 100)),
-						new Stop(0.67, Color.rgb(255, 179, 83)),
-						new Stop(0.68, Color.rgb(227, 170, 100)),
-						new Stop(0.7, Color.rgb(255, 179, 83)),
-						new Stop(0.72, Color.rgb(230, 180, 160)),
-						new Stop(0.75, Color.rgb(145, 107, 62)) });
+		RadialGradient planetPaint = new RadialGradient(0, 0, centerX, centerY- 18 * scale, 35 * scale, 
+		false, CycleMethod.NO_CYCLE,new Stop[] 
+		{
+			// We used Color.rgb method for better control over the
+			// colors and tones
+			new Stop(0.23, Color.rgb(252, 99, 0)),
+			new Stop(0.25, Color.DARKGOLDENROD),
+			new Stop(0.27, Color.rgb(220, 170, 40)),
+			new Stop(0.29, Color.rgb(255, 179, 50)),
+			new Stop(0.3, Color.rgb(180, 72, 31)),
+			new Stop(0.35, Color.rgb(136, 87, 29)),
+			new Stop(0.36, Color.rgb(227, 170, 100)),
+			new Stop(0.37, Color.rgb(255, 179, 83)),
+			new Stop(0.4, Color.rgb(200, 140, 135)),
+			new Stop(0.455, Color.rgb(255, 179, 83)),
+			new Stop(0.47, Color.rgb(227, 170, 100)),
+			new Stop(0.48, Color.rgb(255, 179, 83)),
+			new Stop(0.5, Color.rgb(249, 98, 0)),
+			new Stop(0.53, Color.rgb(255, 179, 83)),
+			new Stop(0.55, Color.rgb(227, 170, 100)),
+			new Stop(0.6, Color.rgb(255, 179, 83)),
+			new Stop(0.62, Color.rgb(227, 170, 100)),
+			new Stop(0.64, Color.rgb(255, 179, 83)),
+			new Stop(0.65, Color.rgb(227, 170, 100)),
+			new Stop(0.67, Color.rgb(255, 179, 83)),
+			new Stop(0.68, Color.rgb(227, 170, 100)),
+			new Stop(0.7, Color.rgb(255, 179, 83)),
+			new Stop(0.72, Color.rgb(230, 180, 160)),
+			new Stop(0.75, Color.rgb(145, 107, 62)) 
+		});
 
 		// Draw Saturn
 		Circle planetBody = new Circle(centerX, centerY, 10 * scale);
@@ -545,12 +550,10 @@ public class SpaceRace extends Application {
 	 * the end.
 	 */
 
-	private static Shape drawArc(Double centerX, Double centerY,
-			Double radiusX, Double radiusY, Double scale, Double width,
-			Color color) {
+	private static Shape drawArc(Double centerX, Double centerY,Double radiusX, Double radiusY, Double scale, Double width,Color color)
+	{
 		// The "half planet" to substract from rings
-		Arc planetBodyTop = new Arc(centerX, centerY, 10 * scale, 10 * scale,
-				0, 180);
+		Arc planetBodyTop = new Arc(centerX, centerY, 10 * scale, 10 * scale,0, 180);
 		planetBodyTop.setFill(Color.BLACK); // It still needs to be filled
 
 		// The full ring
@@ -567,9 +570,9 @@ public class SpaceRace extends Application {
 	}
 
 	// Draw a rocket method
-	public static void drawRocket(Group pane, double centerX, double centerY,
-			double scale, double angle, Color stripesColor,
-			Queue<String> finishOrder, String rocketNum, boolean runing) {
+	public static void drawRocket(Group pane, double centerX, double centerY,double scale, double angle, Color stripesColor,
+		Queue<String> finishOrder, String rocketNum, boolean runing) 
+	{
 		// Filling our Rocket with Gradient
 		// Choose two Colors
 		Stop[] paintGradientRocket = new Stop[] { new Stop(0, Color.GRAY),
@@ -654,8 +657,7 @@ public class SpaceRace extends Application {
 
 		// Draw the back of the rocket with a line
 		Line rocketBack = new Line(centerX + 124 * scale,
-				centerY + 168 * scale, centerX + 124 * scale, centerY + 214
-						* scale);
+				centerY + 168 * scale, centerX + 124 * scale, centerY + 214 * scale);
 		rocketBack.setStrokeWidth(6 * scale);
 
 		// Then we added it to to the final shape
@@ -664,19 +666,21 @@ public class SpaceRace extends Application {
 
 		// The fire that pushes the rocket, made with a Polyline Shape
 		Polyline fire = new Polyline();
-		fire.getPoints().addAll(
-				new Double[] { centerX + 123.5 * scale,
-						centerY + 168.0 * scale, centerX + 90.0 * scale,
-						centerY + 150.0 * scale, centerX + 100.0 * scale,
-						centerY + 168.0 * scale, centerX + 70.0 * scale,
-						centerY + 160.0 * scale, centerX + 80.0 * scale,
-						centerY + 180.0 * scale, centerX + 60.0 * scale,
-						centerY + 190.0 * scale, centerX + 80.0 * scale,
-						centerY + 200.0 * scale, centerX + 70.0 * scale,
-						centerY + 220.0 * scale, centerX + 100.0 * scale,
-						centerY + 213.0 * scale, centerX + 90.0 * scale,
-						centerY + 231.0 * scale, centerX + 123.5 * scale,
-						centerY + 213.0 * scale });
+		fire.getPoints().addAll(new Double[] 
+		{ 
+			centerX + 123.5 * scale,
+			centerY + 168.0 * scale, centerX + 90.0 * scale,
+			centerY + 150.0 * scale, centerX + 100.0 * scale,
+			centerY + 168.0 * scale, centerX + 70.0 * scale,
+			centerY + 160.0 * scale, centerX + 80.0 * scale,
+			centerY + 180.0 * scale, centerX + 60.0 * scale,
+			centerY + 190.0 * scale, centerX + 80.0 * scale,
+			centerY + 200.0 * scale, centerX + 70.0 * scale,
+			centerY + 220.0 * scale, centerX + 100.0 * scale,
+			centerY + 213.0 * scale, centerX + 90.0 * scale,
+			centerY + 231.0 * scale, centerX + 123.5 * scale,
+			centerY + 213.0 * scale 
+		});
 
 		fire.setStroke(Color.RED);
 		fire.setFill(red);
@@ -722,14 +726,14 @@ public class SpaceRace extends Application {
 		aux.getChildren().addAll(windowEdge, windowScrews);
 		aux.setRotate(angle); // Rotate aux
                 
-                Screen screen = Screen.getPrimary();
-                
+		// Path followed by the rocket needs to have also screen boundaries
+                Screen screen      = Screen.getPrimary();
                 Rectangle2D bounds = screen.getVisualBounds();
                 
-
 		// Path Transition, only if it is going to race
-		if (runing) {
-			// Create a path
+		if (runing)
+		{
+			// Creates a path
 			Path path = new Path();
 			path.getElements().add(new MoveTo(50, 80 + centerY * 0.5));
 			path.getElements().add(new LineTo(bounds.getWidth() - 100, 80 + centerY * 0.5));
@@ -737,74 +741,81 @@ public class SpaceRace extends Application {
 
 			// Create a PathTransition
 			PathTransition pathTransition = new PathTransition();
-			// Duration of the race is Random, so the rockets go in difference
-			// speed
-			pathTransition
-					.setDuration(Duration.millis(Math.random() * 2000 + 5000));
+			// Duration of the race is Random, so the rockets go in difference speed
+			pathTransition.setDuration(Duration.millis(Math.random() * 2000 + 5000));
 			pathTransition.setPath(path); // Set path to follow
 			pathTransition.setNode(aux); // Set Rocket as the Node
-			pathTransition
-					.setOrientation(PathTransition.OrientationType.ORTHOGONAL_TO_TANGENT);
+			pathTransition.setOrientation(PathTransition.OrientationType.ORTHOGONAL_TO_TANGENT);
 			pathTransition.play(); // Start Animation
 			// Create a EventHandler to know who finished the race and in what position.
-			pathTransition.setOnFinished(new EventHandler<ActionEvent>() {
+			pathTransition.setOnFinished(new EventHandler<ActionEvent>()
+			{
 				@Override
-				public void handle(ActionEvent event) {
+				public void handle(ActionEvent event) 
+				{
 					// When Rocket finish race get position
 					finishOrder.add(rocketNum);
 				}
 			});
+			// add path to pane
 			pane.getChildren().add(path);
 		}
+		//add rocket to pane
 		pane.getChildren().add(aux);
 	}
 
 	// Draw the Stitch method, only to mid body
 	public static void drawStitch(Pane pane, double centerX, double centerY,
-			double scale, Color bodyColor, Color darkBody, Color fill) {
+			double scale, Color bodyColor, Color darkBody, Color fill) 
+	{
 		// Draw Stitch's head
-		Circle head = new Circle(centerX + 20 * scale, centerY + 20 * scale,
-				10 * scale);
+		Circle head = new Circle(centerX + 20 * scale, centerY + 20 * scale,10 * scale);
 		head.setFill(bodyColor); // Pass color in case you want to change it
 
 		// Made Stitch's hair with a polygon
 		Polygon hair = new Polygon();
 		hair.setFill(bodyColor);
-		hair.getPoints().addAll(
-				new Double[] { centerX + 18.0 * scale, centerY + 12.0 * scale,
-						centerX + 22.0 * scale, centerY + 12.0 * scale,
-						centerX + 22.0 * scale, centerY + 9.0 * scale,
-						centerX + 21.0 * scale, centerY + 10.0 * scale,
-						centerX + 20.0 * scale, centerY + 9.0 * scale,
-						centerX + 19.0 * scale, centerY + 10.0 * scale,
-						centerX + 18.0 * scale, centerY + 9.0 * scale });
+		hair.getPoints().addAll(new Double[] 
+		{ 
+			centerX + 18.0 * scale, centerY + 12.0 * scale,
+			centerX + 22.0 * scale, centerY + 12.0 * scale,
+			centerX + 22.0 * scale, centerY + 9.0 * scale,
+			centerX + 21.0 * scale, centerY + 10.0 * scale,
+			centerX + 20.0 * scale, centerY + 9.0 * scale,
+			centerX + 19.0 * scale, centerY + 10.0 * scale,
+			centerX + 18.0 * scale, centerY + 9.0 * scale 
+		});
 
 		// Both ears, a polyline
 		Polyline leftEar = new Polyline();
-		leftEar.getPoints().addAll(
-				new Double[] { centerX + 14.0 * scale, centerY + 19.0 * scale,
-						centerX + 10.0 * scale, centerY + 14.0 * scale,
-						centerX + 8.0 * scale, centerY + 9.0 * scale,
-						centerX + 5.0 * scale, centerY + 8.0 * scale,
-						centerX + 4.0 * scale, centerY + 10.0 * scale,
-						centerX + 5.0 * scale, centerY + 14.0 * scale,
-						centerX + 6.0 * scale, centerY + 16.5 * scale,
-						centerX + 12.0 * scale, centerY + 24.0 * scale });
+		leftEar.getPoints().addAll(new Double[] 
+		{ 	
+			centerX + 14.0 * scale, centerY + 19.0 * scale,
+			centerX + 10.0 * scale, centerY + 14.0 * scale,
+			centerX + 8.0 * scale, centerY + 9.0 * scale,
+			centerX + 5.0 * scale, centerY + 8.0 * scale,
+			centerX + 4.0 * scale, centerY + 10.0 * scale,
+			centerX + 5.0 * scale, centerY + 14.0 * scale,
+			centerX + 6.0 * scale, centerY + 16.5 * scale,
+			centerX + 12.0 * scale, centerY + 24.0 * scale 
+		});
 		leftEar.setStrokeLineCap(StrokeLineCap.ROUND); // Round corners
 		leftEar.setStroke(Color.LIGHTPINK); // Pass earColors in case you want
 		leftEar.setFill(Color.LIGHTPINK); // to change it
 		leftEar.setStrokeWidth(1);
 
 		Polyline rightEar = new Polyline();
-		rightEar.getPoints().addAll(
-				new Double[] { centerX + 26.0 * scale, centerY + 19.0 * scale,
-						centerX + 30.0 * scale, centerY + 14.0 * scale,
-						centerX + 32.0 * scale, centerY + 9.0 * scale,
-						centerX + 35.0 * scale, centerY + 8.0 * scale,
-						centerX + 36.0 * scale, centerY + 10.0 * scale,
-						centerX + 35.0 * scale, centerY + 14.0 * scale,
-						centerX + 34.0 * scale, centerY + 16.5 * scale,
-						centerX + 28.0 * scale, centerY + 24.0 * scale });
+		rightEar.getPoints().addAll(new Double[] 
+		{ 
+			centerX + 26.0 * scale, centerY + 19.0 * scale,
+			centerX + 30.0 * scale, centerY + 14.0 * scale,
+			centerX + 32.0 * scale, centerY + 9.0 * scale,
+			centerX + 35.0 * scale, centerY + 8.0 * scale,
+			centerX + 36.0 * scale, centerY + 10.0 * scale,
+			centerX + 35.0 * scale, centerY + 14.0 * scale,
+			centerX + 34.0 * scale, centerY + 16.5 * scale,
+			centerX + 28.0 * scale, centerY + 24.0 * scale 
+		});
 		rightEar.setStrokeLineCap(StrokeLineCap.ROUND); // Round corners
 		rightEar.setStroke(Color.LIGHTPINK); // Pass earColors in case you want
 		rightEar.setFill(Color.LIGHTPINK); // to change it
@@ -893,11 +904,13 @@ public class SpaceRace extends Application {
 				pupilRight, noseLength, noseWidth, hair, rightHand, leftHand);
 	}
 
-	public static void drawTrack(Pane pane) {
-		// Nested Loops to make our track
+	public static void drawTrack(Pane pane) 
+	{
+		// Screen boundaries
                 Screen screen = Screen.getPrimary();
                 Rectangle2D bounds = screen.getVisualBounds();
-                        
+		
+                // Nested Loops to make our track
 		for (int i = 0; i < 80; i++) {
 			for (int j = 0; j < 6; j++) 
                         {
@@ -905,22 +918,23 @@ public class SpaceRace extends Application {
 				// j is the number of lines
 				// Create a star with Polygon
 				Polygon star = new Polygon();
-				star.getPoints()
-						.addAll(new Double[] { 15.00 + i * 21, 12.0 + j * 105,
-								13.05 + i * 21, 16.5 + j * 105, 9.00 + i * 21,
-								16.5 + j * 105, 12.0 + i * 21, 19.5 + j * 105,
-								10.5 + i * 21, 24.0 + j * 105, 15.0 + i * 21,
-								21.75 + j * 105, 19.5 + i * 21, 24.0 + j * 105,
-								18.0 + i * 21, 19.5 + j * 105, 21.0 + i * 21,
-								16.5 + j * 105, 17.1 + i * 21, 16.5 + j * 105, });
+				star.getPoints().addAll(new Double[] 
+				{
+					15.00 + i * 21, 12.0 + j * 105,
+					13.05 + i * 21, 16.5 + j * 105, 9.00 + i * 21,
+					16.5 + j * 105, 12.0 + i * 21, 19.5 + j * 105,
+					10.5 + i * 21, 24.0 + j * 105, 15.0 + i * 21,
+					21.75 + j * 105, 19.5 + i * 21, 24.0 + j * 105,
+					18.0 + i * 21, 19.5 + j * 105, 21.0 + i * 21,
+					16.5 + j * 105, 17.1 + i * 21, 16.5 + j * 105, 
+				});
 				star.setRotate(i * 10); // Rotate start every loop
 				star.setFill(Color.GHOSTWHITE); // Add Color
 				pane.getChildren().add(star); // Add it to the pane
 
 				// Create a FadeTransition
 				// It looks like the stars are moving 
-				FadeTransition ft = new FadeTransition(Duration.millis(1000), 
-						star); // Fade Duration
+				FadeTransition ft = new FadeTransition(Duration.millis(1000), star); // Fade Duration
 				ft.setFromValue(1.0);
 				ft.setToValue(0.1);
 				ft.setCycleCount(Timeline.INDEFINITE); // Infinite Fade
@@ -931,7 +945,8 @@ public class SpaceRace extends Application {
 	}
 
 	// The task that prints the results of the race
-	class PostResults implements Runnable {
+	class PostResults implements Runnable 
+	{
 		Queue<String> finishedOrder; // Race Positions
 		Label changingLabel; // ChangingLabel
 		Pane pane; // Our pane
@@ -940,8 +955,8 @@ public class SpaceRace extends Application {
 		Button resetButton; // Reset Button
 
 		// Construct a task with specific values
-		public PostResults(Pane pane, Queue<String> finishedOrder,
-				Label changingLabel, String userChoice, double bet, Button resetButton) {
+		public PostResults(Pane pane, Queue<String> finishedOrder,Label changingLabel, String userChoice, double bet, Button resetButton) 
+		{
 			this.finishedOrder = finishedOrder;
 			this.pane = pane;
 			this.changingLabel = changingLabel;
@@ -951,12 +966,15 @@ public class SpaceRace extends Application {
 		}
 
 		// Tell Thread how to run
-		public void run() {
-			try {
+		public void run() 
+		{
+			try
+			{
 				while (finishedOrder.size() < 5)
 					// Put task to sleep until all 5 rockets finish the race
 					Thread.sleep(500);
-			} catch (InterruptedException e) {
+			}
+			catch (InterruptedException e) {
 				return; // If sleep is interrupted it was due to reset,
 			}
 			
@@ -975,9 +993,11 @@ public class SpaceRace extends Application {
 			final String result = temp;
 
 			// Run after rockets finished the race
-			Platform.runLater(new Runnable() {
+			Platform.runLater(new Runnable() 
+			{
 				@Override
-				public void run() {
+				public void run() 
+				{
 					// Set text giving results
 					changingLabel.setText(result);
 					// Can't Click reset until race is finish
@@ -988,30 +1008,37 @@ public class SpaceRace extends Application {
 	}
 
 	// The task that draw the rockets
-	class MakeRockets implements Runnable {
+	class MakeRockets implements Runnable
+	{
 		Queue<String> finishedOrder; // Race Positions
 		Group pane; // Our Pane
 
 		// Construct a task with specific values
-		public MakeRockets(Group pane, Queue<String> finishedOrder) {
+		public MakeRockets(Group pane, Queue<String> finishedOrder)
+		{
 			this.finishedOrder = finishedOrder;
 			this.pane = pane;
 		}
 
 		// Tell Thread how to run
-		public void run() {
-			try {
+		public void run()
+		{
+			try 
+			{
 				// Put task to sleep for the specific time in milliseconds
 				Thread.sleep(4000);
-			} catch (InterruptedException e) {
+			} catch (InterruptedException e) 
+			{
 				return; // if sleep is interrupted it was due to reset,			
 			}           // and in that case the thread should just stop
 			
-			Platform.runLater(new Runnable() {
+			Platform.runLater(new Runnable()
+			{
 				@Override
-				public void run() {
+				public void run() 
+				{
 					pane.getChildren().clear(); // Clear old pane
-					                            // Draw rockets
+					// Draw rockets
 					drawRocket(pane, -5, -50, 0.6, 360, Color.ORANGERED,
 							finishedOrder, "0", true);
 					drawRocket(pane, -5, 55, 0.6, 360, Color.DEEPPINK,
