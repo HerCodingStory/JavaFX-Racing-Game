@@ -1,4 +1,4 @@
-# JavaFX Game - Stitch Comming Back Home
+# JavaFX Game - Stitch Coming Back Home
 
 Youtube video of Game:
 https://www.youtube.com/watch?v=2ejdvCQF5Co
