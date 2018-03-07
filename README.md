@@ -12,3 +12,4 @@ We used threads to handle the scores of who won the race.
 We use buttons handlers.
 
 Game Picture:
+![alt text](https://github.com/cristyevr94/JavaFX-Racing-Game/blob/master/Game.png)
