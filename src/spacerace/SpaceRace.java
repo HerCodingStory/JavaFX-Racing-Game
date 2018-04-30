@@ -15,7 +15,7 @@
  * assignment is my own work and that I have
  * not copied in part or whole or otherwise 
  * plagiarized the work of other students
- * and/or persons.
+ * and/or persons....
  *----------------------------------------*/
 
 import java.util.LinkedList;
